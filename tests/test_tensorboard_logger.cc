@@ -27,7 +27,7 @@ int test_log_histogram(TensorBoardLogger& logger) {
         vector<float> values;
         for (int j = 0; j < 10000; ++j)
             values.push_back(distribution(generator));
-        logger.add_histogram("histogram", i, values);
+        logger.add_histogram_tb("histogram", i, values);
     }
 
     return 0;
@@ -135,7 +135,7 @@ int test_log(const char* log_file) {
 
 int test_log_scalar_vdl(TensorBoardLogger& logger) {
     // todo:
-    //       embeddings, histogram, hparams, pr_curve, roc_curve
+    //       embeddings, hparams, pr_curve, roc_curve
 
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
@@ -162,6 +162,18 @@ int test_log_scalar_vdl(TensorBoardLogger& logger) {
     logger.add_text("text vdl", 10, "world");
     logger.add_text("vdl", 10, "hello world");
 
+    // note: maybe different from the plot from python api, as the bin bounds
+    //       settings are calculated differently.
+    cout << "test vdl log histogram" << endl;
+    for (int i = 0; i < 3; ++i) {
+        normal_distribution<double> distribution(i * 1, 1.0);
+        vector<float> values(10000, 0.0);
+        for (int j = 0; j < 10000; ++j) {
+            values[j] = distribution(generator);
+        }
+        logger.add_histogram("hist_" + to_string(i), 0, 10, values);
+    }
+
     return 0;
 }
 
@@ -182,7 +194,7 @@ int main(int argc, char* argv[]) {
     assert(ret == 0);
 
     // Optional:  Delete all global objects allocated by libprotobuf.
-    google::protobuf::ShutdownProtobufLibrary();
+    // google::protobuf::ShutdownProtobufLibrary();
 
     return 0;
 }

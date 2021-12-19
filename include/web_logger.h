@@ -1,6 +1,8 @@
 #ifndef TENSORBOARD_LOGGER_H
 #define TENSORBOARD_LOGGER_H
 
+#include <algorithm>
+#include <cmath>
 #include <exception>
 #include <fstream>
 #include <iomanip>
@@ -25,6 +27,50 @@ const std::string kProjectorPluginName = "projector";
 const std::string kTextPluginName = "text";
 
 std::string read_binary_file(const std::string &filename);
+
+// todo: limit not checked.
+template <typename T>
+void calculate_hist_bins(T min, T max, int bins, T &start, T &width) {
+    assert(bins > 1);
+    assert(max > min);
+    T width_min = (max - min) / T(bins);
+    T width_max = (max - min) / T(bins - 1);
+
+    double order = floor(log10(width_min));
+
+    width = exp10(order) * ceil(double(width_min) / exp10(order));
+
+    // todo: maybe the number of loop should be limited.
+    while (width > width_max) {
+        order -= 1;
+        width = exp10(order) * ceil(double(width_min) / exp10(order));
+    }
+
+    T start_min = max - T(bins) * width;
+    T start_max = min;
+
+    int sign = 1;
+    if (start_min < 0 && start_max > 0) {
+        start = 0.0;
+        return;
+    } else if (start_min < 0) {
+        // both negative, swap and change to positive
+        T swap = start_min;
+        start_min = -start_max;
+        start_max = -swap;
+        sign = -1;
+    }
+
+    order = floor(log10(start_min));
+    start = exp10(order) * ceil(double(start_min) / exp10(order));
+
+    // todo: maybe the number of loop should be limited.
+    while (start > start_max) {
+        order -= 1;
+        start = exp10(order) * ceil(double(start_min) / exp10(order));
+    }
+    start *= sign;
+}
 
 class TensorBoardLogger {
    public:
@@ -72,8 +118,8 @@ class TensorBoardLogger {
 
     // https://github.com/dmlc/tensorboard/blob/master/python/tensorboard/summary.py#L127
     template <typename T>
-    int add_histogram(const std::string &tag, int step, const T *value,
-                      size_t num) {
+    int add_histogram_tb(const std::string &tag, int step, const T *value,
+                         size_t num) {
         if (bucket_limits_ == nullptr) {
             generate_default_buckets();
         }
@@ -119,9 +165,60 @@ class TensorBoardLogger {
     };
 
     template <typename T>
-    int add_histogram(const std::string &tag, int step,
-                      const std::vector<T> &values) {
-        return add_histogram(tag, step, values.data(), values.size());
+    int add_histogram_tb(const std::string &tag, int step,
+                         const std::vector<T> &values) {
+        return add_histogram_tb(tag, step, values.data(), values.size());
+    };
+
+    template <typename T>
+    int add_histogram(const std::string &tag, int step, int bins,
+                      const T *value, size_t num, time_t walltime = -1) {
+        T min = *std::min_element(value, value + num);
+        T max = *std::max_element(value, value + num);
+
+        T width, start;
+        calculate_hist_bins(min, max, bins, start, width);
+
+        std::vector<T> bin_bounds(bins + 1, 0);
+        bin_bounds[0] = start;
+        for (size_t t = 1; t < bins + 1; ++t) {
+            bin_bounds[t] = start + width * t;
+        }
+
+        std::vector<int> count(bins, 0);
+        for (size_t i = 0; i < num; ++i) {
+            auto ptr = std::lower_bound(bin_bounds.begin(), bin_bounds.end(),
+                                        value[i]);
+            if (ptr == bin_bounds.end()) {
+                count[bins - 1]++;
+            } else {
+                count[ptr - bin_bounds.begin()]++;
+            }
+        }
+
+        auto *hist = new visualdl::Record_Histogram();
+        for (size_t i = 0; i < bins + 1; ++i) {
+            hist->add_bin_edges(bin_bounds[i]);
+        }
+        for (size_t i = 0; i < bins; ++i) {
+            hist->add_hist(count[i]);
+        }
+
+        auto *record = new visualdl::Record();
+        auto v = record->add_values();
+        v->set_id(step);
+        v->set_tag(tag);
+        v->set_timestamp(walltime);
+        v->set_allocated_histogram(hist);
+
+        return add_record(record);
+    };
+
+    template <typename T>
+    int add_histogram(const std::string &tag, int step, int bins,
+                      const std::vector<T> &values, time_t walltime = -1) {
+        return add_histogram(tag, step, bins, values.data(), values.size(),
+                             walltime);
     };
 
     // metadata (such as display_name, description) of the same tag will be

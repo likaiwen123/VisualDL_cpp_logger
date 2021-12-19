@@ -24,6 +24,8 @@ const std::string kProjectorConfigFile = "projector_config.pbtxt";
 const std::string kProjectorPluginName = "projector";
 const std::string kTextPluginName = "text";
 
+std::string read_binary_file(const std::string &filename);
+
 class TensorBoardLogger {
    public:
     explicit TensorBoardLogger(const char *log_file_or_dir,
@@ -65,7 +67,7 @@ class TensorBoardLogger {
 
     int add_scalar_tb(const std::string &tag, int step, double value);
     int add_scalar(const std::string &tag, int step, double value,
-                   time_t timestamp = -1);
+                   time_t walltime = -1);
     int add_scalar_tb(const std::string &tag, int step, float value);
 
     // https://github.com/dmlc/tensorboard/blob/master/python/tensorboard/summary.py#L127
@@ -124,14 +126,19 @@ class TensorBoardLogger {
 
     // metadata (such as display_name, description) of the same tag will be
     // stripped to keep only the first one.
-    int add_image(const std::string &tag, int step,
+    int add_image_tb(const std::string &tag, int step,
                      const std::string &encoded_image, int height, int width,
                      int channel, const std::string &display_name = "",
                      const std::string &description = "");
-    int add_images(const std::string &tag, int step,
-                   const std::vector<std::string> &encoded_images, int height,
-                   int width, const std::string &display_name = "",
-                   const std::string &description = "");
+    int add_image(const std::string &tag, int step,
+                  const std::string &encoded_image, time_t walltime = -1);
+    int add_image_from_path(const std::string &tag, int step,
+                            const std::string &path, time_t walltime = -1);
+    int add_images_tb(const std::string &tag, int step,
+                      const std::vector<std::string> &encoded_images,
+                      int height, int width,
+                      const std::string &display_name = "",
+                      const std::string &description = "");
     int add_audio(const std::string &tag, int step,
                   const std::string &encoded_audio, float sample_rate,
                   int num_channels, int length_frame,

@@ -36,8 +36,32 @@ using tensorflow::Summary;
 using tensorflow::SummaryMetadata;
 using tensorflow::TensorProto;
 
+using visualdl::Record;
+using visualdl::Record_Audio;
+using visualdl::Record_bytes_embeddings;
+using visualdl::Record_Embedding;
+using visualdl::Record_Embeddings;
+using visualdl::Record_Histogram;
+using visualdl::Record_HParam;
+using visualdl::Record_HParam_HparamInfo;
+using visualdl::Record_Image;
 using visualdl::Record_MetaData;
+using visualdl::Record_PRCurve;
+using visualdl::Record_ROC_Curve;
+using visualdl::Record_Text;
 using visualdl::Record_Value;
+
+string read_binary_file(const string &filename) {
+    ostringstream ss;
+    ifstream fin(filename, std::ios::binary);
+    if (!fin) {
+        std::cerr << "failed to open file " << filename << std::endl;
+        return "";
+    }
+    ss << fin.rdbuf();
+    fin.close();
+    return ss.str();
+}
 
 // https://github.com/dmlc/tensorboard/blob/master/python/tensorboard/summary.py#L115
 int TensorBoardLogger::generate_default_buckets() {
@@ -72,15 +96,15 @@ int TensorBoardLogger::add_scalar_tb(const string &tag, int step,
 }
 
 int TensorBoardLogger::add_scalar(const string &tag, int step, double value,
-                                  time_t timestamp) {
-    if (timestamp < 0) {
-        timestamp = time(nullptr) * 1000;
+                                  time_t walltime) {
+    if (walltime < 0) {
+        walltime = time(nullptr) * 1000;
     }
     auto *record = new Record();
     auto v = record->add_values();
     v->set_id(step);
     v->set_tag(tag);
-    v->set_timestamp(timestamp);
+    v->set_timestamp(walltime);
     v->set_value(value);
 
     return add_record(record);
@@ -110,7 +134,7 @@ int TensorBoardLogger::add_scalar_tb(const string &tag, int step, float value) {
     return add_scalar_tb(tag, step, static_cast<double>(value));
 }
 
-int TensorBoardLogger::add_image(const string &tag, int step,
+int TensorBoardLogger::add_image_tb(const string &tag, int step,
                                     const string &encoded_image, int height,
                                     int width, int channel,
                                     const string &display_name,
@@ -133,7 +157,33 @@ int TensorBoardLogger::add_image(const string &tag, int step,
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_images(
+int TensorBoardLogger::add_image(const std::string &tag, int step,
+                                 const std::string &encoded_image,
+                                 time_t walltime) {
+    if (walltime < 0) {
+        walltime = time(nullptr) * 1000;
+    }
+
+    auto *image = new Record_Image();
+    image->set_encoded_image_string(encoded_image);
+
+    auto *record = new Record();
+    auto v = record->add_values();
+    v->set_id(step);
+    v->set_tag(tag);
+    v->set_timestamp(walltime);
+    v->set_allocated_image(image);
+
+    return add_record(record);
+}
+
+int TensorBoardLogger::add_image_from_path(const std::string &tag, int step,
+                                           const std::string &path,
+                                           time_t walltime) {
+    return add_image(tag, step, read_binary_file(path), walltime);
+}
+
+int TensorBoardLogger::add_images_tb(
     const std::string &tag, int step,
     const std::vector<std::string> &encoded_images, int height, int width,
     const std::string &display_name, const std::string &description) {

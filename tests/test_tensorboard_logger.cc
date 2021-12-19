@@ -8,24 +8,12 @@
 
 using namespace std;
 
-string read_binary_file(const string& filename) {
-    ostringstream ss;
-    ifstream fin(filename, ios::binary);
-    if (!fin) {
-        std::cerr << "failed to open file " << filename << std::endl;
-        return "";
-    }
-    ss << fin.rdbuf();
-    fin.close();
-    return ss.str();
-}
-
 int test_log_scalar(TensorBoardLogger& logger) {
     cout << "test log scalar" << endl;
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
     for (int i = 0; i < 10; ++i) {
-      logger.add_scalar_tb("scalar", i, default_distribution(generator));
+        logger.add_scalar_tb("scalar", i, default_distribution(generator));
     }
 
     return 0;
@@ -52,14 +40,14 @@ int test_log_image(TensorBoardLogger& logger) {
     auto image2 = read_binary_file("./assets/audio.png");
 
     // add single image
-    logger.add_image("TensorBoard Text Plugin", 1, image1, 1864, 822, 3,
-                     "TensorBoard", "Text");
-    logger.add_image("TensorBoard Audo Plugin", 1, image2, 1766, 814, 3,
-                     "TensorBoard", "Audio");
+    logger.add_image_tb("TensorBoard Text Plugin", 1, image1, 1864, 822, 3,
+                        "TensorBoard", "Text");
+    logger.add_image_tb("TensorBoard Audo Plugin", 1, image2, 1766, 814, 3,
+                        "TensorBoard", "Audio");
 
     // add multiple images
     // FIXME This seems doesn't work anymore.
-    // logger.add_images(
+    // logger.add_images_tb(
     //     "Multiple Images", 1, {image1, image2}, 1502, 632, "test", "not
     //     working");
 
@@ -135,11 +123,11 @@ int test_log(const char* log_file) {
     TensorBoardLogger logger(log_file);
 
     test_log_scalar(logger);
-    test_log_histogram(logger);
-    test_log_image(logger);
-    test_log_audio(logger);
-    test_log_text(logger);
-    test_log_embedding(logger);
+    //    test_log_histogram(logger);
+    //    test_log_image(logger);
+    //    test_log_audio(logger);
+    //    test_log_text(logger);
+    //    test_log_embedding(logger);
 
     return 0;
 }
@@ -149,8 +137,14 @@ int test_log_scalar_vdl(TensorBoardLogger& logger) {
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
     for (int i = 0; i < 10; ++i) {
-      logger.add_scalar("scalar_vdl", i, default_distribution(generator));
+        logger.add_scalar("scalar_vdl", i, default_distribution(generator));
     }
+
+    logger.add_image("dog", 1, read_binary_file("./dog.jpg"));
+    logger.add_image("dog", 2, read_binary_file("./2.jpg"));
+    logger.add_image("dog", 3, read_binary_file("./dynamic_display.gif"));
+
+    logger.add_image_from_path("gif", 10, "./dynamic_display.gif");
 
     return 0;
 }

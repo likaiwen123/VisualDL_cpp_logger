@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "event.pb.h"
+#include "record.pb.h"
 #include "projector_config.pb.h"
 
 using std::endl;
@@ -33,6 +33,9 @@ using tensorflow::ProjectorConfig;
 using tensorflow::Summary;
 using tensorflow::SummaryMetadata;
 using tensorflow::TensorProto;
+
+using visualdl::Record_MetaData;
+using visualdl::Record_Value;
 
 // https://github.com/dmlc/tensorboard/blob/master/python/tensorboard/summary.py#L115
 int TensorBoardLogger::generate_default_buckets() {
@@ -63,6 +66,38 @@ int TensorBoardLogger::add_scalar(const string &tag, int step, double value) {
     v->set_tag(tag);
     v->set_simple_value(value);
     return add_event(step, summary);
+}
+
+int TensorBoardLogger::add_scalar_vdl(const string &tag, int step, double value, int64_t timestamp) {
+    if (timestamp < 0) {
+        timestamp = time(nullptr) * 1000;
+    }
+    auto *record = new Record();
+    auto v = record->add_values();
+    v->set_id(step);
+    v->set_tag(tag);
+    v->set_timestamp(timestamp);
+    v->set_value(value);
+
+    return add_record(record);
+}
+
+int TensorBoardLogger::add_meta(const std::string &tag, const std::string &display_name, int64_t step, int64_t timestamp) {
+    if (timestamp < 0) {
+        timestamp = time(nullptr) * 1000;
+    }
+
+    auto *meta = new Record_MetaData();
+    meta->set_display_name(display_name);
+
+    auto *record = new Record();
+    auto v = record->add_values();
+    v->set_id(step);
+    v->set_tag(tag);
+    v->set_timestamp(timestamp);
+    v->set_allocated_meta_data(meta);
+
+    return add_record(record);
 }
 
 int TensorBoardLogger::add_scalar(const string &tag, int step, float value) {
@@ -305,6 +340,18 @@ int TensorBoardLogger::write(Event &event) {
     ofs_->write((char *)&len_crc, sizeof(len_crc));  // NOLINT
     ofs_->write(buf.c_str(), buf.size());
     ofs_->write((char *)&data_crc, sizeof(data_crc));  // NOLINT
+    ofs_->flush();
+    return 0;
+}
+
+int TensorBoardLogger::write(Record &record) {
+    string buf;
+    record.SerializeToString(&buf);
+    auto buf_len = static_cast<uint64_t>(buf.size());
+
+    ofs_->write((char *)&buf_len, sizeof(buf_len));
+    ofs_->write(buf.c_str(), buf.size());
+    
     ofs_->flush();
     return 0;
 }

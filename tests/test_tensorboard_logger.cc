@@ -144,10 +144,31 @@ int test_log(const char* log_file) {
     return 0;
 }
 
+int test_log_scalar_vdl(TensorBoardLogger& logger) {
+    cout << "test vdl log scalar" << endl;
+    default_random_engine generator;
+    normal_distribution<double> default_distribution(0, 1.0);
+    for (int i = 0; i < 10; ++i) {
+        logger.add_scalar_vdl("scalar_vdl", i, default_distribution(generator));
+    }
+
+    return 0;
+}
+
+int test_vdl(const char* log_dir) {
+    TensorBoardLogger logger(log_dir, true);
+    logger.add_meta();
+    test_log_scalar_vdl(logger);
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     int ret = test_log("./demo/tfevents.pb");
+    assert(ret == 0);
+
+    ret = test_vdl("./logs/out");
     assert(ret == 0);
 
     // Optional:  Delete all global objects allocated by libprotobuf.

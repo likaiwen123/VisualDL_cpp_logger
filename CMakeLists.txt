@@ -21,5 +21,5 @@ target_include_directories(tensorboard_logger PUBLIC
 )
 target_link_libraries(tensorboard_logger PUBLIC ${Protobuf_LIBRARIES})
 
-add_executable(tensorboard_logger_test tests/test_tensorboard_logger.cc)
-target_link_libraries(tensorboard_logger_test tensorboard_logger)
+add_executable(visualdl_logger_test tests/test_tensorboard_logger.cc)
+target_link_libraries(visualdl_logger_test tensorboard_logger)

@@ -3,14 +3,20 @@
 
 #include <exception>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 #include "crc.h"
 #include "event.pb.h"
 
+#include "record.pb.h"
+
 using tensorflow::Event;
 using tensorflow::Summary;
+
+using visualdl::Record;
 
 // extract parent dir from path by finding the last slash
 std::string get_parent_dir(const std::string &path);
@@ -21,14 +27,27 @@ const std::string kTextPluginName = "text";
 
 class TensorBoardLogger {
    public:
-    explicit TensorBoardLogger(const char *log_file) {
+    explicit TensorBoardLogger(const char *log_file_or_dir, bool visualdl=false, const std::string &suffix="") {
         bucket_limits_ = nullptr;
-        ofs_ = new std::ofstream(
-            log_file, std::ios::out | std::ios::trunc | std::ios::binary);
+
+        if (visualdl) {
+            std::stringstream time_str;
+            time_str << std::setw(10) << std::setfill('0') << time(nullptr);
+            std::string filename = "vdlrecords." + time_str.str() + ".log" + suffix;
+
+            // todo: create when not exists.
+            log_dir_ = log_file_or_dir;
+            ofs_ = new std::ofstream(
+                log_file_or_dir + std::string("/") + filename, std::ios::out | std::ios::trunc | std::ios::binary);
+        }
+        else {
+            ofs_ = new std::ofstream(
+                log_file_or_dir, std::ios::out | std::ios::trunc | std::ios::binary);
+            log_dir_ = get_parent_dir(log_file_or_dir);
+        }
         if (!ofs_->is_open())
             throw std::runtime_error("failed to open log_file " +
-                                     std::string(log_file));
-        log_dir_ = get_parent_dir(log_file);
+                                     std::string(log_file_or_dir));
     }
     ~TensorBoardLogger() {
         ofs_->close();
@@ -37,7 +56,10 @@ class TensorBoardLogger {
             bucket_limits_ = nullptr;
         }
     }
+    int add_meta(const std::string &tag=std::string("meta_data_tag"), const std::string &display_name="", int64_t step=0, int64_t timestamp=-1);
+
     int add_scalar(const std::string &tag, int step, double value);
+    int add_scalar_vdl(const std::string &tag, int step, double value, int64_t timestamp=-1);
     int add_scalar(const std::string &tag, int step, float value);
 
     // https://github.com/dmlc/tensorboard/blob/master/python/tensorboard/summary.py#L127
@@ -142,7 +164,12 @@ class TensorBoardLogger {
    private:
     int generate_default_buckets();
     int add_event(int64_t step, Summary *summary);
+    inline int add_record(Record *record) {
+        return write(*record);
+    }
+
     int write(Event &event);
+    int write(Record &record);
 
     std::string log_dir_;
     std::ofstream *ofs_;

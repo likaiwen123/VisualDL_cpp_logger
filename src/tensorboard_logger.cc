@@ -13,8 +13,8 @@
 #include <string>
 #include <vector>
 
-#include "record.pb.h"
 #include "projector_config.pb.h"
+#include "record.pb.h"
 
 using std::endl;
 using std::ifstream;
@@ -24,7 +24,9 @@ using std::ostringstream;
 using std::string;
 using std::to_string;
 using std::vector;
+
 using google::protobuf::TextFormat;
+
 using tensorflow::EmbeddingInfo;
 using tensorflow::Event;
 using tensorflow::HistogramProto;
@@ -60,7 +62,8 @@ int TensorBoardLogger::generate_default_buckets() {
     return 0;
 }
 
-int TensorBoardLogger::add_scalar(const string &tag, int step, double value) {
+int TensorBoardLogger::add_scalar_tb(const string &tag, int step,
+                                     double value) {
     auto *summary = new Summary();
     auto *v = summary->add_value();
     v->set_tag(tag);
@@ -68,7 +71,8 @@ int TensorBoardLogger::add_scalar(const string &tag, int step, double value) {
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_scalar_vdl(const string &tag, int step, double value, int64_t timestamp) {
+int TensorBoardLogger::add_scalar(const string &tag, int step, double value,
+                                  time_t timestamp) {
     if (timestamp < 0) {
         timestamp = time(nullptr) * 1000;
     }
@@ -82,7 +86,9 @@ int TensorBoardLogger::add_scalar_vdl(const string &tag, int step, double value,
     return add_record(record);
 }
 
-int TensorBoardLogger::add_meta(const std::string &tag, const std::string &display_name, int64_t step, int64_t timestamp) {
+int TensorBoardLogger::add_meta(const std::string &tag,
+                                const std::string &display_name, int64_t step,
+                                time_t timestamp) {
     if (timestamp < 0) {
         timestamp = time(nullptr) * 1000;
     }
@@ -100,15 +106,15 @@ int TensorBoardLogger::add_meta(const std::string &tag, const std::string &displ
     return add_record(record);
 }
 
-int TensorBoardLogger::add_scalar(const string &tag, int step, float value) {
-    return add_scalar(tag, step, static_cast<double>(value));
+int TensorBoardLogger::add_scalar_tb(const string &tag, int step, float value) {
+    return add_scalar_tb(tag, step, static_cast<double>(value));
 }
 
 int TensorBoardLogger::add_image(const string &tag, int step,
-                                 const string &encoded_image, int height,
-                                 int width, int channel,
-                                 const string &display_name,
-                                 const string &description) {
+                                    const string &encoded_image, int height,
+                                    int width, int channel,
+                                    const string &display_name,
+                                    const string &description) {
     auto *meta = new SummaryMetadata();
     meta->set_display_name(display_name.empty() ? tag : display_name);
     meta->set_summary_description(description);
@@ -255,7 +261,8 @@ int TensorBoardLogger::add_embedding(
     const std::string &tensordata_filename,
     const std::vector<std::string> &metadata,
     const std::string &metadata_filename, int step) {
-    ofstream binary_tensor_file(log_dir_ + tensordata_filename, std::ios::binary);
+    ofstream binary_tensor_file(log_dir_ + tensordata_filename,
+                                std::ios::binary);
     if (!binary_tensor_file.is_open()) {
         throw std::runtime_error("failed to open binary tensor file " +
                                  log_dir_ + tensordata_filename);
@@ -292,7 +299,8 @@ int TensorBoardLogger::add_embedding(const std::string &tensor_name,
                                      const std::vector<std::string> &metadata,
                                      const std::string &metadata_filename,
                                      int step) {
-    ofstream binary_tensor_file(log_dir_ + tensordata_filename, std::ios::binary);
+    ofstream binary_tensor_file(log_dir_ + tensordata_filename,
+                                std::ios::binary);
     if (!binary_tensor_file.is_open()) {
         throw std::runtime_error("failed to open binary tensor file " +
                                  log_dir_ + tensordata_filename);
@@ -351,7 +359,7 @@ int TensorBoardLogger::write(Record &record) {
 
     ofs_->write((char *)&buf_len, sizeof(buf_len));
     ofs_->write(buf.c_str(), buf.size());
-    
+
     ofs_->flush();
     return 0;
 }

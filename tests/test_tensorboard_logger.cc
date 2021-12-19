@@ -25,7 +25,7 @@ int test_log_scalar(TensorBoardLogger& logger) {
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
     for (int i = 0; i < 10; ++i) {
-        logger.add_scalar("scalar", i, default_distribution(generator));
+      logger.add_scalar_tb("scalar", i, default_distribution(generator));
     }
 
     return 0;
@@ -149,7 +149,7 @@ int test_log_scalar_vdl(TensorBoardLogger& logger) {
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
     for (int i = 0; i < 10; ++i) {
-        logger.add_scalar_vdl("scalar_vdl", i, default_distribution(generator));
+      logger.add_scalar("scalar_vdl", i, default_distribution(generator));
     }
 
     return 0;

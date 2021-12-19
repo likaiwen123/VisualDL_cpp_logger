@@ -3,14 +3,13 @@
 
 #include <exception>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <iomanip>
 
 #include "crc.h"
 #include "event.pb.h"
-
 #include "record.pb.h"
 
 using tensorflow::Event;
@@ -27,22 +26,26 @@ const std::string kTextPluginName = "text";
 
 class TensorBoardLogger {
    public:
-    explicit TensorBoardLogger(const char *log_file_or_dir, bool visualdl=false, const std::string &suffix="") {
+    explicit TensorBoardLogger(const char *log_file_or_dir,
+                               bool visualdl = false,
+                               const std::string &suffix = "") {
         bucket_limits_ = nullptr;
 
         if (visualdl) {
             std::stringstream time_str;
             time_str << std::setw(10) << std::setfill('0') << time(nullptr);
-            std::string filename = "vdlrecords." + time_str.str() + ".log" + suffix;
+            std::string filename =
+                "vdlrecords." + time_str.str() + ".log" + suffix;
 
             // todo: create when not exists.
             log_dir_ = log_file_or_dir;
             ofs_ = new std::ofstream(
-                log_file_or_dir + std::string("/") + filename, std::ios::out | std::ios::trunc | std::ios::binary);
-        }
-        else {
-            ofs_ = new std::ofstream(
-                log_file_or_dir, std::ios::out | std::ios::trunc | std::ios::binary);
+                log_file_or_dir + std::string("/") + filename,
+                std::ios::out | std::ios::trunc | std::ios::binary);
+        } else {
+            ofs_ = new std::ofstream(log_file_or_dir, std::ios::out |
+                                                          std::ios::trunc |
+                                                          std::ios::binary);
             log_dir_ = get_parent_dir(log_file_or_dir);
         }
         if (!ofs_->is_open())
@@ -56,11 +59,14 @@ class TensorBoardLogger {
             bucket_limits_ = nullptr;
         }
     }
-    int add_meta(const std::string &tag=std::string("meta_data_tag"), const std::string &display_name="", int64_t step=0, int64_t timestamp=-1);
+    int add_meta(const std::string &tag = std::string("meta_data_tag"),
+                 const std::string &display_name = "", int64_t step = 0,
+                 time_t timestamp = -1);
 
-    int add_scalar(const std::string &tag, int step, double value);
-    int add_scalar_vdl(const std::string &tag, int step, double value, int64_t timestamp=-1);
-    int add_scalar(const std::string &tag, int step, float value);
+    int add_scalar_tb(const std::string &tag, int step, double value);
+    int add_scalar(const std::string &tag, int step, double value,
+                   time_t timestamp = -1);
+    int add_scalar_tb(const std::string &tag, int step, float value);
 
     // https://github.com/dmlc/tensorboard/blob/master/python/tensorboard/summary.py#L127
     template <typename T>
@@ -119,9 +125,9 @@ class TensorBoardLogger {
     // metadata (such as display_name, description) of the same tag will be
     // stripped to keep only the first one.
     int add_image(const std::string &tag, int step,
-                  const std::string &encoded_image, int height, int width,
-                  int channel, const std::string &display_name = "",
-                  const std::string &description = "");
+                     const std::string &encoded_image, int height, int width,
+                     int channel, const std::string &display_name = "",
+                     const std::string &description = "");
     int add_images(const std::string &tag, int step,
                    const std::vector<std::string> &encoded_images, int height,
                    int width, const std::string &display_name = "",
@@ -164,9 +170,7 @@ class TensorBoardLogger {
    private:
     int generate_default_buckets();
     int add_event(int64_t step, Summary *summary);
-    inline int add_record(Record *record) {
-        return write(*record);
-    }
+    inline int add_record(Record *record) { return write(*record); }
 
     int write(Event &event);
     int write(Record &record);

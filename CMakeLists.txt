@@ -12,6 +12,8 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${protos})
 add_library(tensorboard_logger STATIC
     "src/crc.cc"
     "src/tensorboard_logger.cc"
+    "src/visualdl_logger.cc"
+    "src/logger.cc"
     ${PROTO_SRCS}
 )
 target_include_directories(tensorboard_logger PUBLIC

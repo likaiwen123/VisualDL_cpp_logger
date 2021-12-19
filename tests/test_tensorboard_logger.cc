@@ -4,7 +4,7 @@
 #include <sstream>
 #include <vector>
 
-#include "tensorboard_logger.h"
+#include "web_logger.h"
 
 using namespace std;
 

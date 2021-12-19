@@ -57,17 +57,18 @@ int test_log_image(TensorBoardLogger& logger) {
 int test_log_audio(TensorBoardLogger& logger) {
     cout << "test log audio" << endl;
     auto audio = read_binary_file("./assets/file_example_WAV_1MG.wav");
-    logger.add_audio("Audio Sample", 1, audio, 8000, 2, 8000 * 16 * 2 * 33,
-                     "audio/wav", "Impact Moderato",
-                     "https://file-examples.com/index.php/sample-audio-files/"
-                     "sample-wav-download/");
+    logger.add_audio_tb(
+        "Audio Sample", 1, audio, 8000, 2, 8000 * 16 * 2 * 33, "audio/wav",
+        "Impact Moderato",
+        "https://file-examples.com/index.php/sample-audio-files/"
+        "sample-wav-download/");
 
     return 0;
 }
 
 int test_log_text(TensorBoardLogger& logger) {
     cout << "test log text" << endl;
-    logger.add_text("Text Sample", 1, "Hello World");
+    logger.add_text_tb("Text Sample", 1, "Hello World");
 
     return 0;
 }
@@ -133,18 +134,33 @@ int test_log(const char* log_file) {
 }
 
 int test_log_scalar_vdl(TensorBoardLogger& logger) {
-    cout << "test vdl log scalar" << endl;
+    // todo:
+    //       embeddings, histogram, hparams, pr_curve, roc_curve
+
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
+    cout << "test vdl log scalar" << endl;
     for (int i = 0; i < 10; ++i) {
         logger.add_scalar("scalar_vdl", i, default_distribution(generator));
     }
 
+    // todo: MatLab figure, image matrix not supported
+    cout << "test vdl log image" << endl;
     logger.add_image("dog", 1, read_binary_file("./dog.jpg"));
     logger.add_image("dog", 2, read_binary_file("./2.jpg"));
     logger.add_image("dog", 3, read_binary_file("./dynamic_display.gif"));
 
     logger.add_image_from_path("gif", 10, "./dynamic_display.gif");
+
+    // todo: check more audio file types.
+    cout << "test vdl log audio" << endl;
+    logger.add_audio("audio", 1, read_binary_file("./example.wav"), 8000);
+    logger.add_audio_from_path("audio", 2, "./testing.wav", 8000);
+
+    cout << "test vdl log text" << endl;
+    logger.add_text("text vdl", 5, "hello");
+    logger.add_text("text vdl", 10, "world");
+    logger.add_text("vdl", 10, "hello world");
 
     return 0;
 }

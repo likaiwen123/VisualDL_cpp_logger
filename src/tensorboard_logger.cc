@@ -1,5 +1,3 @@
-#include "web_logger.h"
-
 #include <google/protobuf/text_format.h>
 
 #include <algorithm>
@@ -14,6 +12,7 @@
 #include <vector>
 
 #include "projector_config.pb.h"
+#include "web_logger.h"
 
 using std::endl;
 using std::ifstream;
@@ -120,12 +119,10 @@ int TensorBoardLogger::add_images_tb(
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_audio(const string &tag, int step,
-                                 const string &encoded_audio, float sample_rate,
-                                 int num_channels, int length_frame,
-                                 const string &content_type,
-                                 const string &display_name,
-                                 const string &description) {
+int TensorBoardLogger::add_audio_tb(
+    const string &tag, int step, const string &encoded_audio, float sample_rate,
+    int num_channels, int length_frame, const string &content_type,
+    const string &display_name, const string &description) {
     auto *meta = new SummaryMetadata();
     meta->set_display_name(display_name.empty() ? tag : display_name);
     meta->set_summary_description(description);
@@ -145,7 +142,8 @@ int TensorBoardLogger::add_audio(const string &tag, int step,
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_text(const string &tag, int step, const char *text) {
+int TensorBoardLogger::add_text_tb(const string &tag, int step,
+                                   const char *text) {
     auto *plugin_data = new SummaryMetadata::PluginData();
     plugin_data->set_plugin_name(kTextPluginName);
 

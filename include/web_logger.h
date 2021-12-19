@@ -139,13 +139,22 @@ class TensorBoardLogger {
                       int height, int width,
                       const std::string &display_name = "",
                       const std::string &description = "");
+    int add_audio_tb(const std::string &tag, int step,
+                     const std::string &encoded_audio, float sample_rate,
+                     int num_channels, int length_frame,
+                     const std::string &content_type,
+                     const std::string &display_name = "",
+                     const std::string &description = "");
     int add_audio(const std::string &tag, int step,
                   const std::string &encoded_audio, float sample_rate,
-                  int num_channels, int length_frame,
-                  const std::string &content_type,
-                  const std::string &display_name = "",
-                  const std::string &description = "");
-    int add_text(const std::string &tag, int step, const char *text);
+                  time_t walltime = -1);
+    int add_audio_from_path(const std::string &tag, int step,
+                            const std::string &path, float sample_rate,
+                            time_t walltime = -1);
+
+    int add_text_tb(const std::string &tag, int step, const char *text);
+    int add_text(const std::string &tag, int step, const std::string &text,
+                 time_t walltime = -1);
 
     // `tensordata` and `metadata` should be in tsv format, and should be
     // manually created before calling `add_embedding`

@@ -135,17 +135,17 @@ int test_log(const char* log_file) {
     return 0;
 }
 
-int test_log_scalar_vdl(TensorBoardLogger& logger) {
-    // todo:
-    //       hparams, pr_curve, roc_curve
-
-    default_random_engine generator;
-    normal_distribution<double> default_distribution(0, 1.0);
+int test_log_vdl_scalar(TensorBoardLogger& logger,
+                        default_random_engine& generator,
+                        normal_distribution<double>& default_distribution) {
     cout << "test vdl log scalar" << endl;
     for (int i = 0; i < 10; ++i) {
         logger.add_scalar("scalar_vdl", i, default_distribution(generator));
     }
+    return 0;
+}
 
+int test_log_vdl_image(TensorBoardLogger& logger) {
     // todo: MatLab figure, image matrix not supported
     cout << "test vdl log image" << endl;
     logger.add_image("dog", 1, read_binary_file("./dog.jpg"));
@@ -154,16 +154,29 @@ int test_log_scalar_vdl(TensorBoardLogger& logger) {
 
     logger.add_image_from_path("gif", 10, "./dynamic_display.gif");
 
+    return 0;
+}
+
+int test_log_vdl_audio(TensorBoardLogger& logger) {
     // todo: check more audio file types.
     cout << "test vdl log audio" << endl;
     logger.add_audio("audio", 1, read_binary_file("./example.wav"), 8000);
     logger.add_audio_from_path("audio", 2, "./testing.wav", 8000);
 
+    return 0;
+}
+
+int test_log_vdl_text(TensorBoardLogger& logger) {
     cout << "test vdl log text" << endl;
     logger.add_text("text vdl", 5, "hello");
     logger.add_text("text vdl", 10, "world");
     logger.add_text("vdl", 10, "hello world");
 
+    return 0;
+}
+
+int test_log_vdl_histogram(TensorBoardLogger& logger,
+                           default_random_engine& generator) {
     // note: maybe different from the plot from python api, as the bin bounds
     //       settings are calculated differently.
     cout << "test vdl log histogram" << endl;
@@ -176,6 +189,10 @@ int test_log_scalar_vdl(TensorBoardLogger& logger) {
         logger.add_histogram("hist_" + to_string(i), 0, 10, values);
     }
 
+    return 0;
+}
+
+int test_log_vdl_embeddings(TensorBoardLogger& logger) {
     // todo: path reading not supported.
     cout << "test vdl log embeddings" << endl;
     vector<vector<float>> embs{
@@ -201,10 +218,26 @@ int test_log_scalar_vdl(TensorBoardLogger& logger) {
     return 0;
 }
 
+int test_log_vdl(TensorBoardLogger& logger) {
+    // todo:
+    //       hparams, pr_curve, roc_curve
+    default_random_engine generator;
+    normal_distribution<double> default_distribution(0, 1.0);
+
+    test_log_vdl_scalar(logger, generator, default_distribution);
+    test_log_vdl_image(logger);
+    test_log_vdl_audio(logger);
+    test_log_vdl_text(logger);
+    test_log_vdl_histogram(logger, generator);
+    test_log_vdl_embeddings(logger);
+
+    return 0;
+}
+
 int test_vdl(const char* log_dir) {
     TensorBoardLogger logger(log_dir, true);
     logger.add_meta();
-    test_log_scalar_vdl(logger);
+    test_log_vdl(logger);
     return 0;
 }
 

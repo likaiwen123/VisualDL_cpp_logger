@@ -6,6 +6,7 @@
 #include <exception>
 #include <fstream>
 #include <iomanip>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -87,9 +88,10 @@ class TensorBoardLogger {
 
             // todo: create when not exists.
             log_dir_ = log_file_or_dir;
+            // todo: multiple platforms.
+            log_file_ = log_dir_ + "/" + filename;
             ofs_ = new std::ofstream(
-                log_file_or_dir + std::string("/") + filename,
-                std::ios::out | std::ios::trunc | std::ios::binary);
+                log_file_, std::ios::out | std::ios::trunc | std::ios::binary);
         } else {
             ofs_ = new std::ofstream(log_file_or_dir, std::ios::out |
                                                           std::ios::trunc |
@@ -293,6 +295,10 @@ class TensorBoardLogger {
                            std::vector<std::string>(),
                        time_t walltime = -1);
 
+    int add_hparams(const std::map<std::string, std::string> &hparams_dict,
+                    const std::vector<std::string> &metrics_list,
+                    time_t walltime = -1);
+
    private:
     int generate_default_buckets();
     int add_event(int64_t step, Summary *summary);
@@ -302,6 +308,7 @@ class TensorBoardLogger {
     int write(Record &record);
 
     std::string log_dir_;
+    std::string log_file_;
     std::ofstream *ofs_;
     std::vector<double> *bucket_limits_;
 };  // class TensorBoardLogger

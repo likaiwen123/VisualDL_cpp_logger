@@ -13,6 +13,7 @@
 
 #include "record.pb.h"
 #include "web_logger.h"
+#include "md5.h"
 
 using std::endl;
 using std::ifstream;
@@ -171,11 +172,9 @@ int TensorBoardLogger::add_embeddings(
                 header[i] = "label_" + to_string(i);
             }
         }
-    }
-    else {
+    } else {
         assert(metadata.size() == metadata_header.size());
     }
-
 
     if (walltime < 0) {
         walltime = time(nullptr) * 1000;
@@ -205,6 +204,57 @@ int TensorBoardLogger::add_embeddings(
     v->set_tag(tag);
     v->set_timestamp(walltime);
     v->set_allocated_embeddings(embs);
+
+    return add_record(record);
+}
+
+int TensorBoardLogger::add_hparams(
+    const std::map<std::string, std::string> &hparams_dict,
+    const std::vector<std::string> &metrics_list, time_t walltime) {
+    if (walltime < 0) {
+        walltime = time(nullptr) * 1000;
+    }
+
+    string name = md5(log_file_);
+
+    auto *hparams = new Record_HParam();
+    hparams->set_name(name);
+
+    for (const auto &pair : hparams_dict) {
+        const auto &k = pair.first;
+        const auto &v = pair.second;
+
+        auto *hparam_info = hparams->add_hparaminfos();
+        hparam_info->set_name(k);
+
+        int64_t v_int;
+        double v_float;
+        try {
+            // todo: stoi returns an int, not int64
+            v_int = std::stoi(v);
+            hparam_info->set_int_value(v_int);
+        } catch (const std::invalid_argument &) {
+            try {
+                v_float = std::stod(v);
+                hparam_info->set_float_value(v_float);
+            } catch (const std::invalid_argument &) {
+                hparam_info->set_string_value(v);
+            }
+        }
+    }
+
+    for (const auto &v : metrics_list) {
+        auto *metric_info = hparams->add_metricinfos();
+        metric_info->set_name(v);
+        metric_info->set_float_value(0);
+    }
+
+    auto *record = new Record();
+    auto v = record->add_values();
+    v->set_id(1);
+    v->set_tag("hparam");
+    v->set_timestamp(walltime);
+    v->set_allocated_hparam(hparams);
 
     return add_record(record);
 }

@@ -218,6 +218,29 @@ int test_log_vdl_embeddings(TensorBoardLogger& logger) {
     return 0;
 }
 
+int test_log_vdl_hparams(const string& dir1, const string& dir2) {
+    cout << "test vdl log hparams" << endl;
+
+    TensorBoardLogger logger1(dir1.c_str(), true);
+    TensorBoardLogger logger2(dir2.c_str(), true);
+
+    logger1.add_hparams({{"lr", "0.1"}, {"bsize", "1"}, {"opt", "sgd"}},
+                        {"hparam/accuracy", "hparam/loss"});
+    for (size_t i = 0; i < 10; ++i) {
+        logger1.add_scalar("hparam/accuracy", i, 1.0 * i);
+        logger1.add_scalar("hparam/loss", i, 2.0 * i);
+    }
+
+    logger2.add_hparams({{"lr", "0.2"}, {"bsize", "2"}, {"opt", "relu"}},
+                        {"hparam/accuracy", "hparam/loss"});
+    for (size_t i = 0; i < 10; ++i) {
+        logger2.add_scalar("hparam/accuracy", i, 1.0 / double(i + 1));
+        logger2.add_scalar("hparam/loss", i, 5.0 * i);
+    }
+
+    return 0;
+}
+
 int test_log_vdl(TensorBoardLogger& logger) {
     // todo:
     //       hparams, pr_curve, roc_curve
@@ -248,6 +271,9 @@ int main(int argc, char* argv[]) {
     assert(ret == 0);
 
     ret = test_vdl("./logs/out");
+    assert(ret == 0);
+
+    ret = test_log_vdl_hparams("./logs/hparam/1", "./logs/hparam/2");
     assert(ret == 0);
 
     // Optional:  Delete all global objects allocated by libprotobuf.

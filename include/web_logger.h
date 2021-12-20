@@ -254,31 +254,44 @@ class TensorBoardLogger {
                  time_t walltime = -1);
 
     // `tensordata` and `metadata` should be in tsv format, and should be
-    // manually created before calling `add_embedding`
+    // manually created before calling `add_embedding_tb`
     //
     // `tensor_name` is mandated to differentiate tensors
     //
     // TODO add sprite image support
-    int add_embedding(
+    int add_embedding_tb(
         const std::string &tensor_name, const std::string &tensordata_path,
         const std::string &metadata_path = "",
         const std::vector<uint32_t> &tensor_shape = std::vector<uint32_t>(),
         int step = 1 /* no effect */);
     // write tensor to binary file
-    int add_embedding(
+    int add_embedding_tb(
         const std::string &tensor_name,
         const std::vector<std::vector<float>> &tensor,
         const std::string &tensordata_filename,
         const std::vector<std::string> &metadata = std::vector<std::string>(),
         const std::string &metadata_filename = "",
         int step = 1 /* no effect */);
-    int add_embedding(
+    int add_embedding_tb(
         const std::string &tensor_name, const float *tensor,
         const std::vector<uint32_t> &tensor_shape,
         const std::string &tensordata_filename,
         const std::vector<std::string> &metadata = std::vector<std::string>(),
         const std::string &metadata_filename = "",
         int step = 1 /* no effect */);
+
+    int add_embeddings(const std::string &tag,
+                       const std::vector<std::vector<float>> &mat,
+                       const std::vector<std::vector<std::string>> &metadata,
+                       const std::vector<std::string> &metadata_header =
+                           std::vector<std::string>(),
+                       time_t walltime = -1);
+    int add_embeddings(const std::string &tag,
+                       const std::vector<std::vector<float>> &mat,
+                       const std::vector<std::string> &metadata,
+                       const std::vector<std::string> &metadata_header =
+                           std::vector<std::string>(),
+                       time_t walltime = -1);
 
    private:
     int generate_default_buckets();

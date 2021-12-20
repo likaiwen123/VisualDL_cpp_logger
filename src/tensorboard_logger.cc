@@ -165,11 +165,10 @@ int TensorBoardLogger::add_text_tb(const string &tag, int step,
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_embedding(const std::string &tensor_name,
-                                     const std::string &tensordata_path,
-                                     const std::string &metadata_path,
-                                     const std::vector<uint32_t> &tensor_shape,
-                                     int step) {
+int TensorBoardLogger::add_embedding_tb(
+    const std::string &tensor_name, const std::string &tensordata_path,
+    const std::string &metadata_path, const std::vector<uint32_t> &tensor_shape,
+    int step) {
     auto *plugin_data = new SummaryMetadata::PluginData();
     plugin_data->set_plugin_name(kProjectorPluginName);
     auto *meta = new SummaryMetadata();
@@ -214,7 +213,7 @@ int TensorBoardLogger::add_embedding(const std::string &tensor_name,
     return add_event(step, summary);
 }
 
-int TensorBoardLogger::add_embedding(
+int TensorBoardLogger::add_embedding_tb(
     const std::string &tensor_name,
     const std::vector<std::vector<float>> &tensor,
     const std::string &tensordata_filename,
@@ -247,17 +246,16 @@ int TensorBoardLogger::add_embedding(
     vector<uint32_t> tensor_shape;
     tensor_shape.push_back(tensor.size());
     tensor_shape.push_back(tensor[0].size());
-    return add_embedding(tensor_name, tensordata_filename, metadata_filename,
-                         tensor_shape, step);
+    return add_embedding_tb(tensor_name, tensordata_filename, metadata_filename,
+                            tensor_shape, step);
 }
 
-int TensorBoardLogger::add_embedding(const std::string &tensor_name,
-                                     const float *tensor,
-                                     const std::vector<uint32_t> &tensor_shape,
-                                     const std::string &tensordata_filename,
-                                     const std::vector<std::string> &metadata,
-                                     const std::string &metadata_filename,
-                                     int step) {
+int TensorBoardLogger::add_embedding_tb(
+    const std::string &tensor_name, const float *tensor,
+    const std::vector<uint32_t> &tensor_shape,
+    const std::string &tensordata_filename,
+    const std::vector<std::string> &metadata,
+    const std::string &metadata_filename, int step) {
     ofstream binary_tensor_file(log_dir_ + tensordata_filename,
                                 std::ios::binary);
     if (!binary_tensor_file.is_open()) {
@@ -282,8 +280,8 @@ int TensorBoardLogger::add_embedding(const std::string &tensor_name,
         for (const auto &meta : metadata) metadata_file << meta << endl;
         metadata_file.close();
     }
-    return add_embedding(tensor_name, tensordata_filename, metadata_filename,
-                         tensor_shape, step);
+    return add_embedding_tb(tensor_name, tensordata_filename, metadata_filename,
+                            tensor_shape, step);
 }
 
 int TensorBoardLogger::add_event(int64_t step, Summary *summary) {

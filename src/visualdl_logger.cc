@@ -147,6 +147,68 @@ int TensorBoardLogger::add_text(const std::string &tag, int step,
     return add_record(record);
 }
 
+int TensorBoardLogger::add_embeddings(
+    const std::string &tag, const std::vector<std::vector<float>> &mat,
+    const std::vector<std::string> &metadata,
+    const std::vector<std::string> &metadata_header, time_t walltime) {
+    vector<vector<string>> meta(1, metadata);
+    return add_embeddings(tag, mat, meta, metadata_header, walltime);
+}
+
+int TensorBoardLogger::add_embeddings(
+    const std::string &tag, const std::vector<std::vector<float>> &mat,
+    const std::vector<std::vector<std::string>> &metadata,
+    const std::vector<std::string> &metadata_header, time_t walltime) {
+    assert(!metadata.empty());
+    assert(mat.size() == metadata[0].size());
+
+    std::vector<std::string> header;
+
+    if (metadata_header.empty()) {
+        if (metadata.size() > 1) {
+            header.resize(metadata.size());
+            for (size_t i = 0; i < metadata.size(); ++i) {
+                header[i] = "label_" + to_string(i);
+            }
+        }
+    }
+    else {
+        assert(metadata.size() == metadata_header.size());
+    }
+
+
+    if (walltime < 0) {
+        walltime = time(nullptr) * 1000;
+    }
+
+    auto *embs = new Record_Embeddings();
+
+    for (const auto &meta : metadata_header) {
+        embs->add_label_meta(meta);
+    }
+    for (const auto &meta : header) {
+        embs->add_label_meta(meta);
+    }
+    for (size_t i = 0; i < mat.size(); ++i) {
+        auto emb = embs->add_embeddings();
+        for (const auto &meta : metadata) {
+            emb->add_label(meta[i]);
+        }
+        for (const auto &v : mat[i]) {
+            emb->add_vectors(v);
+        }
+    }
+
+    auto *record = new Record();
+    auto v = record->add_values();
+    v->set_id(0);
+    v->set_tag(tag);
+    v->set_timestamp(walltime);
+    v->set_allocated_embeddings(embs);
+
+    return add_record(record);
+}
+
 int TensorBoardLogger::write(Record &record) {
     string buf;
     record.SerializeToString(&buf);

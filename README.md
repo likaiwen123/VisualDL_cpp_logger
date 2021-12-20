@@ -14,11 +14,14 @@ Only support `scalar` at the moment, other plots may be supported later.
 ```
 
 ![scalar](./assets/vdl_scalar.png)
-<!-- ![histogram](./assets/histogram.png)
-![image](./assets/image.png)
-![audio](./assets/audio.png)
-![text](./assets/text.png)
-![embedding](./assets/embedding.png) -->
+![image](./assets/vdl_image.png)
+![audio](./assets/vdl_audio.png)
+![text](./assets/vdl_text.png)
+![histogram](./assets/vdl_histogram.png)
+![embedding](./assets/vdl_embeddings.png)
+<!-- ![hparam](./assets/vdl_hparam.png)
+![pr_curve](./assets/vdl_pr_curve.png)
+![roc_curve](./assets/vdl_roc_curve.png) -->
 
 # Acknowledgement
 

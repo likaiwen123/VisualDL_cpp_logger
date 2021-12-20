@@ -76,8 +76,10 @@ int test_log_text(TensorBoardLogger& logger) {
 int test_log_embedding(TensorBoardLogger& logger) {
     cout << "test log embedding" << endl;
     // test add embedding
-    logger.add_embedding("vocab", "../assets/vecs.tsv", "../assets/meta.tsv");
-    logger.add_embedding("another vocab without labels", "../assets/vecs.tsv");
+    logger.add_embedding_tb("vocab", "../assets/vecs.tsv",
+                            "../assets/meta.tsv");
+    logger.add_embedding_tb("another vocab without labels",
+                            "../assets/vecs.tsv");
 
     // test add binary embedding
     vector<vector<float>> tensor;
@@ -100,8 +102,8 @@ int test_log_embedding(TensorBoardLogger& logger) {
         meta.push_back(line);
     }
     meta_file.close();
-    logger.add_embedding("binary tensor", tensor, "tensor.bin", meta,
-                         "binary_tensor.tsv");
+    logger.add_embedding_tb("binary tensor", tensor, "tensor.bin", meta,
+                            "binary_tensor.tsv");
 
     // test tensor stored as 1d array
     float* tensor_1d = new float[num_elements];
@@ -113,8 +115,8 @@ int test_log_embedding(TensorBoardLogger& logger) {
     vector<uint32_t> tensor_shape;
     tensor_shape.push_back(tensor.size());
     tensor_shape.push_back(tensor[0].size());
-    logger.add_embedding("binary tensor 1d", tensor_1d, tensor_shape,
-                         "tensor_1d.bin", meta, "binary_tensor_1d.tsv");
+    logger.add_embedding_tb("binary tensor 1d", tensor_1d, tensor_shape,
+                            "tensor_1d.bin", meta, "binary_tensor_1d.tsv");
     delete[] tensor_1d;
 
     return 0;
@@ -135,7 +137,7 @@ int test_log(const char* log_file) {
 
 int test_log_scalar_vdl(TensorBoardLogger& logger) {
     // todo:
-    //       embeddings, hparams, pr_curve, roc_curve
+    //       hparams, pr_curve, roc_curve
 
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
@@ -173,6 +175,28 @@ int test_log_scalar_vdl(TensorBoardLogger& logger) {
         }
         logger.add_histogram("hist_" + to_string(i), 0, 10, values);
     }
+
+    // todo: path reading not supported.
+    cout << "test vdl log embeddings" << endl;
+    vector<vector<float>> embs{
+        {1.3561076367500755, 1.3116267195134017, 1.6785401875616097},
+        {1.1039614644440658, 1.8891609992484688, 1.32030488587171},
+        {1.9924524852447711, 1.9358920727142739, 1.2124401279391606},
+        {1.4129542689796446, 1.7372166387197474, 1.7317806077076527},
+        {1.3913371800587777, 1.4684674577930312, 1.521413635247637}};
+    vector<string> metadata = {"label_1", "label_2", "label_3", "label_4",
+                               "label_5"};
+    vector<string> metaheader;
+
+    // todo: failed to load data
+    // vector<string> metaheader = {"label_1"};
+    logger.add_embeddings("single embs", embs, metadata, metaheader, 0);
+
+    vector<vector<string>> labels{
+        {"label_a_1", "label_a_2", "label_a_3", "label_a_4", "label_a_5"},
+        {"label_b_1", "label_b_2", "label_b_3", "label_b_4", "label_b_5"}};
+    vector<string> label_meta{"label_a", "label_b"};
+    logger.add_embeddings("embs", embs, labels, label_meta);
 
     return 0;
 }

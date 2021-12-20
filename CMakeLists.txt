@@ -14,6 +14,7 @@ add_library(tensorboard_logger STATIC
     "src/tensorboard_logger.cc"
     "src/visualdl_logger.cc"
     "src/logger.cc"
+    "src/md5.cc"
     ${PROTO_SRCS}
 )
 target_include_directories(tensorboard_logger PUBLIC

@@ -299,6 +299,20 @@ class TensorBoardLogger {
                     const std::vector<std::string> &metrics_list,
                     time_t walltime = -1);
 
+    int add_pr_curve(const std::string &tag, const std::vector<double> &labels,
+                     const std::vector<double> &predictions, int step,
+                     int num_thresholds = 127, time_t walltime = -1,
+                     double weights = 1.0);
+    int add_roc_curve(const std::string &tag, const std::vector<double> &labels,
+                      const std::vector<double> &predictions, int step,
+                      int num_thresholds = 127, time_t walltime = -1,
+                      double weights = 1.0);
+
+    int add_curve(const std::string &type, const std::string &tag,
+                  const std::vector<double> &labels,
+                  const std::vector<double> &predictions, int step,
+                  int num_thresholds, time_t walltime, double weights);
+
    private:
     int generate_default_buckets();
     int add_event(int64_t step, Summary *summary);

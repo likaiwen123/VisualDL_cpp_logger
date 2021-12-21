@@ -241,6 +241,27 @@ int test_log_vdl_hparams(const string& dir1, const string& dir2) {
     return 0;
 }
 
+int test_log_vdl_curves(TensorBoardLogger& logger,
+                        default_random_engine& generator) {
+    cout << "test vdl log pr curve and roc curve" << endl;
+    for (size_t step = 0; step < 3; ++step) {
+        int count = 100;
+        int num_thresholds = 5;
+        vector<double> predictions(count, 0.0);
+        vector<double> labels(count, 0.0);
+        std::uniform_real_distribution<double> distribution(-0.5, 0.5);
+        for (size_t i = 0; i < count; ++i) {
+            predictions[i] = distribution(generator) + 0.5;
+            labels[i] = (distribution(generator) > 0);
+        }
+        logger.add_pr_curve("pr_curve", labels, predictions, step,
+                            num_thresholds);
+        logger.add_roc_curve("roc_curve", labels, predictions, step,
+                             num_thresholds);
+    }
+    return 0;
+}
+
 int test_log_vdl(TensorBoardLogger& logger) {
     // todo:
     //       hparams, pr_curve, roc_curve
@@ -253,6 +274,7 @@ int test_log_vdl(TensorBoardLogger& logger) {
     test_log_vdl_text(logger);
     test_log_vdl_histogram(logger, generator);
     test_log_vdl_embeddings(logger);
+    test_log_vdl_curves(logger, generator);
 
     return 0;
 }

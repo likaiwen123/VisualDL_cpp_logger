@@ -231,12 +231,24 @@ int TensorBoardLogger::add_hparams(
         double v_float;
         try {
             // todo: stoi returns an int, not int64
-            v_int = std::stoi(v);
-            hparam_info->set_int_value(v_int);
+            size_t p = 0;
+            v_int = std::stoi(v, &p);
+            if (p == v.length()) {
+                hparam_info->set_int_value(v_int);
+            }
+            else {
+                throw std::invalid_argument("\"" + v + "\" is not an integer.");
+            }
         } catch (const std::invalid_argument &) {
             try {
-                v_float = std::stod(v);
-                hparam_info->set_float_value(v_float);
+                size_t p = 0;
+                v_float = std::stod(v, &p);
+                if (p == v.length()) {
+                    hparam_info->set_float_value(v_float);
+                }
+                else {
+                    throw std::invalid_argument("\"" + v + "\" is not a double.");
+                }
             } catch (const std::invalid_argument &) {
                 hparam_info->set_string_value(v);
             }

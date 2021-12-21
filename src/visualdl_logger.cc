@@ -174,6 +174,12 @@ int TensorBoardLogger::add_embeddings(
         }
     } else {
         assert(metadata.size() == metadata_header.size());
+        if (metadata.size() == 1) {
+            std::cout << "warning! meataheader should be empty when metadata "
+                         "is 1-dim, otherwise VisualDL may fail (tested with "
+                         "version 2.2.2), this may be a bug in VisualDL."
+                      << std::endl;
+        }
     }
 
     if (walltime < 0) {

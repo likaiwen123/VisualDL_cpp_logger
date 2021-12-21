@@ -263,8 +263,6 @@ int test_log_vdl_curves(TensorBoardLogger& logger,
 }
 
 int test_log_vdl(TensorBoardLogger& logger) {
-    // todo:
-    //       hparams, pr_curve, roc_curve
     default_random_engine generator;
     normal_distribution<double> default_distribution(0, 1.0);
 

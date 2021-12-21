@@ -6,7 +6,7 @@ CC = g++ -std=c++11 -O3 -Wall
 
 PROTOS = $(wildcard proto/*.proto)
 SRCS = $(patsubst proto/%.proto,src/%.pb.cc,$(PROTOS))
-SRCS += src/tensorboard_logger.cc src/crc.cc
+SRCS += src/tensorboard_logger.cc src/crc.cc src/logger.cc src/visualdl_logger.cc src/md5.cc
 OBJS = $(patsubst src/%.cc,src/%.o,$(SRCS))
 
 LIB = libtensorboard_logger.a

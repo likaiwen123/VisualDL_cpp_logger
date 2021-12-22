@@ -20,12 +20,13 @@ Only support `scalar` at the moment, other plots may be supported later.
 ![histogram](./assets/vdl_histogram.png)
 ![embedding](./assets/vdl_embeddings.png)
 ![hparam](./assets/vdl_hparams.png)
-<!-- ![pr_curve](./assets/vdl_pr_curve.png) -->
-<!-- ![roc_curve](./assets/vdl_roc_curve.png) -->
+![pr_curve](./assets/vdl_pr_curve.png)
+![roc_curve](./assets/vdl_roc_curve.png)
+
+<!-- todo: screenshots unify and todos -->
 
 # Acknowledgement
 
 - Inspired by and modified from [tensorboard_logger](https://github.com/RustingSword/tensorboard_logger) project.
-- <font color="red">todo: as many plots have not been supported, tensorboard codes still exists currently. </font>
 
 <!-- - Audio sample from [File Examples](https://file-examples.com/index.php/sample-audio-files/sample-wav-download/). -->
